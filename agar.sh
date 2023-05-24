@@ -114,31 +114,27 @@ actionstop(){
 }
 
 
-
-
-
-
-
-
-
-
 #############################################
 
 startAll(){
     gotToWorkspaceRoot
+
+
+    echo $(getBaseDockerCommand)
+
+
+}
+
+getBaseDockerCommand(){
     YML_LIST="$(getCoreYMLFiles) $(getStackYMLForHost)"
 
     DOCKER_COMPOSE_COMMAND=""
 
     for yml in ${YML_LIST[@]}; do
-       log "Starting $yml"
        DOCKER_COMPOSE_COMMAND+=" -f $yml"
     done
-    DOCKER_COMPOSE_COMMAND+=" up -d"
-
-    echo $DOCKER_COMPOSE_COMMAND
-
-
+    echo "${DOCKER_COMPOSE_COMMAND[@]}"
+   
 }
 
 getCoreYMLFiles(){
