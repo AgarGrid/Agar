@@ -161,7 +161,7 @@ getStackYMLForHost(){
     readarray -t HOST_STACK_LIST < $HOST_STACK_FILE
       
     for fileEntry in ${HOST_STACK_LIST[@]}; do
-        HOST_YLM="$HOST_DIR/$fileEntry.yml"
+        HOST_YLM="$STACKS_DIR/$fileEntry.yml"
         HOST_STACK_YML+=("$HOST_YLM")
     done
 
