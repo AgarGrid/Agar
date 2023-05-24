@@ -120,8 +120,7 @@ startAll(){
     gotToWorkspaceRoot
 
 
-    echo $(getBaseDockerCommand)
-
+    docker compose $(getBaseDockerCommand) up
 
 }
 
