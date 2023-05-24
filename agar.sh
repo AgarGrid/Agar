@@ -174,29 +174,61 @@ getStackYMLForHost(){
 }
 
 stopWatcherLoop(){
+    log "Stop Watcher Loop"
     gotToProjectRoot
     rm $WATCH_LOOP_FILE
 }
 
 startWatcherLoop(){
+    log "Start Watcher Loop"
     gotToProjectRoot
     touch $WATCH_LOOP_FILE
+    watcherLoop
 }
 
 watcherLoop(){
-    log "Watcher Loop"
-    sleep $WATCHER_INTERVAL
+    gotToProjectRoot
 
-    # if [ "$(remoteChanges $CORE_COMPOSE_DIR)" = true ] ; then
-    #     echo "CHANGES $CORE_COMPOSE_DIR"
-    # fi
+    if [ "$(doesFileExists $WATCH_LOOP_FILE)" = true ] ; then
+        log "Watcher Loop"
+        gotToProjectRoot
 
-    # if [ "$(remoteChanges $STACKS_DIR)" = true ] ; then
-    #     echo "CHANGES $STACKS_DIR"
-    # fi
+        if [ "$(remoteChanges $CORE_COMPOSE_DIR)" = true ] ; then
+            log "CHANGES $CORE_COMPOSE_DIR"
+            restartFromwatcher
+        fi
+
+        if [ "$(remoteChanges $STACKS_DIR)" = true ] ; then
+            log "CHANGES $STACKS_DIR"
+            restartFromwatcher
+        fi
+
+        HOST_DIR="./$HOST_DIR_PREFIX$(getHostName)"
+
+        if [ "$(remoteChanges $HOST_DIR)" = true ] ; then
+            log "CHANGES $STACKS_DIR"
+            restartFromwatcher
+        fi
+        
+        
+        sleep $WATCHER_INTERVAL
+        watcherLoop
+    fi
 
 
-    watcherLoop
+  
+
+
+
+    
+}
+
+restartFromwatcher(){
+    actionunwatch
+    actionstop
+    actionrefresh
+    actionrestart
+    actionwatch
 }
 
 remoteChanges(){
