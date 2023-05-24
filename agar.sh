@@ -98,10 +98,12 @@ actionrefresh(){
 
 actionwatch(){ 
     log "Starting watch"
+    startWatcherLoop
 }
 
 actionunwatch(){ 
     log "Starting unwatch"
+    stopWatcherLoop
 }
 actionrestart(){ 
     log "Restart"
@@ -111,6 +113,7 @@ actionrestart(){
 
 actionstop(){ 
     log "Starting stop"
+    stopAll
 }
 
 
@@ -118,10 +121,12 @@ actionstop(){
 
 startAll(){
     gotToWorkspaceRoot
+    docker compose $(getBaseDockerCommand) up -d
+}
 
-
-    docker compose $(getBaseDockerCommand) up
-
+stopAll(){
+    gotToWorkspaceRoot
+    docker compose $(getBaseDockerCommand) down
 }
 
 getBaseDockerCommand(){
@@ -168,18 +173,27 @@ getStackYMLForHost(){
     echo "${HOST_STACK_YML[@]}"
 }
 
+stopWatcherLoop(){
+    gotToProjectRoot
+    rm $WATCH_LOOP_FILE
+}
 
+startWatcherLoop(){
+    gotToProjectRoot
+    touch $WATCH_LOOP_FILE
+}
 
 watcherLoop(){
     log "Watcher Loop"
     sleep $WATCHER_INTERVAL
 
-    if [ "$(remoteChanges $CORE_COMPOSE_DIR)" = true ] ; then
-        echo "CHANGES"
-      
-    else 
-        echo "NO CHANGES"
-    fi
+    # if [ "$(remoteChanges $CORE_COMPOSE_DIR)" = true ] ; then
+    #     echo "CHANGES $CORE_COMPOSE_DIR"
+    # fi
+
+    # if [ "$(remoteChanges $STACKS_DIR)" = true ] ; then
+    #     echo "CHANGES $STACKS_DIR"
+    # fi
 
 
     watcherLoop
