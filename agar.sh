@@ -122,8 +122,8 @@ actionstop(){
 
 startAll(){
     gotToWorkspaceRoot
-    ##getBaseDockerCommand
-    docker compose $(getBaseDockerCommand) up
+    # getBaseDockerCommand
+   docker compose $(getBaseDockerCommand) up
 }
 
 stopAll(){
