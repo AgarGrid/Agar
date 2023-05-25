@@ -92,6 +92,7 @@ doAction(){
 
 actionrefresh(){ 
     log "Starting refresh" 
+    gotToProjectRoot
     rm -rf $WORKSPACE_DIR
     checkWorkSpace
 }
@@ -121,7 +122,8 @@ actionstop(){
 
 startAll(){
     gotToWorkspaceRoot
-    docker compose $(getBaseDockerCommand) up -d
+    ##getBaseDockerCommand
+    docker compose $(getBaseDockerCommand) up
 }
 
 stopAll(){
@@ -130,7 +132,7 @@ stopAll(){
 }
 
 getBaseDockerCommand(){
-    YML_LIST="$(getCoreYMLFiles) $(getStackYMLForHost)"
+    YML_LIST="$(getCoreYMLFiles) $(getNetworkYMLForHost) $(getConfigStorageYMLForHost) $(getFileStorageYMLForHost) $(getStackYMLForHost)"
 
     DOCKER_COMPOSE_COMMAND=""
 
@@ -153,6 +155,15 @@ getCoreYMLFiles(){
         
     done
 
+    ### core compose
+    for file in $CORE_COMPOSE_DIR/storage/*.yml; do
+        [ -f "$file" ] || continue
+        CORE_STACK_LIST+=("$file")
+        
+    done
+
+
+
     echo "${CORE_STACK_LIST[@]}"
 
 }
@@ -161,9 +172,9 @@ getStackYMLForHost(){
 
     HOST_STACK_YML=()
     HOST_DIR="./$HOST_DIR_PREFIX$(getHostName)"
-    HOST_STACK_FILE="$HOST_DIR/$HOST_STACK_FILE"
+    HOST_FILE_PATH="$HOST_DIR/$HOST_STACK_FILE"
 
-    readarray -t HOST_STACK_LIST < $HOST_STACK_FILE
+    readarray -t HOST_STACK_LIST < $HOST_FILE_PATH
       
     for fileEntry in ${HOST_STACK_LIST[@]}; do
         HOST_YLM="$STACKS_DIR/$fileEntry.yml"
@@ -172,6 +183,59 @@ getStackYMLForHost(){
 
     echo "${HOST_STACK_YML[@]}"
 }
+
+getConfigStorageYMLForHost(){
+
+    HOST_STACK_YML=()
+    HOST_DIR="./$HOST_DIR_PREFIX$(getHostName)"
+    HOST_FILE_PATH="$HOST_DIR/$HOST_CONFIG_FILE"
+
+    readarray -t HOST_STACK_LIST < $HOST_FILE_PATH
+      
+    for fileEntry in ${HOST_STACK_LIST[@]}; do
+        HOST_YLM="$STACKS_CONFIG_DIR/$fileEntry.yml"
+        HOST_STACK_YML+=("$HOST_YLM")
+    done
+
+    echo "${HOST_STACK_YML[@]}"
+}
+
+getFileStorageYMLForHost(){
+
+    HOST_STACK_YML=()
+    HOST_DIR="./$HOST_DIR_PREFIX$(getHostName)"
+    HOST_FILE_PATH="$HOST_DIR/$HOST_STORAGE_FILE"
+
+    readarray -t HOST_STACK_LIST < $HOST_FILE_PATH
+      
+    for fileEntry in ${HOST_STACK_LIST[@]}; do
+        HOST_YLM="$STACKS_FILES_DIR/$fileEntry.yml"
+        HOST_STACK_YML+=("$HOST_YLM")
+    done
+
+    echo "${HOST_STACK_YML[@]}"
+}
+
+
+getNetworkYMLForHost(){
+
+    HOST_STACK_YML=()
+    HOST_DIR="./$HOST_DIR_PREFIX$(getHostName)"
+    HOST_FILE_PATH="$HOST_DIR/$HOST_NETWORK_FILE"
+
+    readarray -t HOST_STACK_LIST < $HOST_FILE_PATH
+      
+    for fileEntry in ${HOST_STACK_LIST[@]}; do
+        HOST_YLM="$STACKS_NETWORK_DIR/$fileEntry.yml"
+        HOST_STACK_YML+=("$HOST_YLM")
+    done
+
+    echo "${HOST_STACK_YML[@]}"
+}
+
+
+
+
 
 stopWatcherLoop(){
     log "Stop Watcher Loop"
@@ -193,26 +257,45 @@ watcherLoop(){
         log "Watcher Loop"
         gotToProjectRoot
 
+        CHANGES=false
+
+
+
         if [ "$(remoteChanges $CORE_COMPOSE_DIR)" = true ] ; then
             log "CHANGES $CORE_COMPOSE_DIR"
-            restartFromwatcher
+            CHANGES=true
+           # restartFromwatcher
         fi
 
         if [ "$(remoteChanges $STACKS_DIR)" = true ] ; then
             log "CHANGES $STACKS_DIR"
-            restartFromwatcher
+            CHANGES=true
+           # restartFromwatcher
         fi
 
         HOST_DIR="./$HOST_DIR_PREFIX$(getHostName)"
 
         if [ "$(remoteChanges $HOST_DIR)" = true ] ; then
-            log "CHANGES $STACKS_DIR"
-            restartFromwatcher
+            log "CHANGES $HOST_DIR"
+            CHANGES=true
+           # restartFromwatcher
         fi
         
+
+
+        if [ "$CHANGES" = true ]
+        then  
+            echo "Changes"
+            restartFromwatcher
+        else
+            sleep $WATCHER_INTERVAL
+            watcherLoop
+        fi
+
+
+
         
-        sleep $WATCHER_INTERVAL
-        watcherLoop
+
     fi
 
 
