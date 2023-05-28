@@ -2,8 +2,6 @@
 
 initialise(){   
     
-    checkWorkSpace
-
     ## Check of param is passed already
     if [ ! -z "$1" ]
     then
@@ -56,6 +54,8 @@ restartSCript(){
 
 
 doAction(){
+    checkWorkSpace
+
     if [[ "$1" == "refresh" ]]; then
       actionrefresh
     elif [[ "$1" == "watch" ]]; then
