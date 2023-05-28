@@ -13,22 +13,6 @@ initialise(){
         echo "No With param"
         askOption
     fi
-
-
-    ##refreshHostsConfig
-    
-
-
-
-
-
-
-    
-    ##checkWorkSpace
-
-
-
-    ##checkForRemoteChanges
 }
 
 askOption(){
@@ -122,8 +106,7 @@ actionstop(){
 
 startAll(){
     gotToWorkspaceRoot
-    # getBaseDockerCommand
-   docker compose $(getBaseDockerCommand) up
+    docker compose $(getBaseDockerCommand) up -d
 }
 
 stopAll(){
